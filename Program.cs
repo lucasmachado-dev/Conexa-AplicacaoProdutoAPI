@@ -1,14 +1,17 @@
+using AplicacaoProdutoAPI;
+using AplicacaoProdutoAPI.Repositories;
+using AplicacaoProdutoAPI.Repositories.Interfaces;
+using AplicacaoProdutoAPI.Services;
+using AplicacaoProdutoAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddDbContext<appDBContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("appDBContext") ?? throw new InvalidOperationException("Connection string 'appDBContext' not found.")));
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+ServiceConfiguration.ConfigureServices(builder.Services, builder.Configuration);
+
 
 var app = builder.Build();
 
@@ -16,6 +19,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    
 }
 
 app.UseHttpsRedirection();
@@ -24,6 +28,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-//TODO: migração automatica
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<appDBContext>();
+    dbContext.Database.Migrate();
+}
 
 app.Run();

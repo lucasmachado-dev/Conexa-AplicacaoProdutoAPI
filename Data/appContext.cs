@@ -16,4 +16,7 @@ public class appDBContext : DbContext
     public DbSet<AplicacaoItens> AplicacaoItens { get; set; } = default!;
     public DbSet<Aplicacao> Aplicacoes { get; set; } = default!;
 
+
+
+
 }

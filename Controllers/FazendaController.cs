@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using AplicacaoProdutoAPI.Models;
-using NuGet.Protocol;
+using AplicacaoProdutoAPI.Services.Interfaces;
 
 namespace AplicacaoProdutoAPI.Controllers
 {
@@ -14,30 +8,19 @@ namespace AplicacaoProdutoAPI.Controllers
     [ApiController]
     public class FazendaController : ControllerBase
     {
-        private readonly appDBContext _context;
+        private readonly IFazendaService _fazendaService;
 
-        public FazendaController(appDBContext context)
+        public FazendaController(IFazendaService fazendaService)
         {
-            _context = context;
+            _fazendaService = fazendaService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Fazenda>>> GetFazendas()
+        [HttpPost]
+        public async Task<ActionResult<Fazenda>> PostFazenda(Fazenda fazenda)
         {
-            return await _context.Fazendas.ToListAsync();
-        }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Fazenda>> GetFazenda(int id)
-        {
-            var fazenda = await _context.Fazendas.FindAsync(id);
-
-            if (fazenda == null)
-            {
-                return NotFound();
-            }
-
-            return fazenda;
+            await _fazendaService.CreateFazenda(fazenda);
+            return Ok(fazenda);
         }
 
         [HttpPut("{id}")]
@@ -48,54 +31,52 @@ namespace AplicacaoProdutoAPI.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(fazenda).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                await _fazendaService.UpdateFazenda(id, fazenda);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (KeyNotFoundException)
             {
-                if (!FazendaExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
-            return Ok(fazenda.ToJson());
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<Fazenda>> PostFazenda(Fazenda fazenda)
-        {
-            _context.Fazendas.Add(fazenda);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetFazenda", new { id = fazenda.Id }, fazenda);
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFazenda(int id)
         {
-            var fazenda = await _context.Fazendas.FindAsync(id);
+            try
+            {
+                await _fazendaService.DeleteFazenda(id);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Fazenda>>> GetFazendas()
+        {
+            var fazendas = await _fazendaService.GetFazenda();
+            return Ok(fazendas);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Fazenda>> GetFazenda(int id)
+        {
+            var fazenda = await _fazendaService.GetFazenda(id);
+
             if (fazenda == null)
             {
                 return NotFound();
             }
 
-            _context.Fazendas.Remove(fazenda);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool FazendaExists(int id)
-        {
-            return _context.Fazendas.Any(e => e.Id == id);
+            return Ok(fazenda);
         }
     }
 }

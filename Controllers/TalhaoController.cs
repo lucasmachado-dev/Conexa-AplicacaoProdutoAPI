@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using AplicacaoProdutoAPI.Models;
+using AplicacaoProdutoAPI.Services.Interfaces;
 
 namespace AplicacaoProdutoAPI.Controllers
 {
@@ -13,36 +8,20 @@ namespace AplicacaoProdutoAPI.Controllers
     [ApiController]
     public class TalhaoController : ControllerBase
     {
-        private readonly appDBContext _context;
+        private readonly ITalhaoService _talhaoService;
 
-        public TalhaoController(appDBContext context)
+        public TalhaoController(ITalhaoService talhaoService)
         {
-            _context = context;
+            _talhaoService = talhaoService;
         }
 
-        // GET: api/Talhao
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Talhao>>> GetTalhoes()
+        [HttpPost]
+        public async Task<ActionResult<Talhao>> PostTalhao(Talhao talhao)
         {
-            return await _context.Talhoes.ToListAsync();
+            await _talhaoService.CreateTalhao(talhao);
+            return Ok(talhao);
         }
 
-        // GET: api/Talhao/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Talhao>> GetTalhao(int id)
-        {
-            var talhao = await _context.Talhoes.FindAsync(id);
-
-            if (talhao == null)
-            {
-                return NotFound();
-            }
-
-            return talhao;
-        }
-
-        // PUT: api/Talhao/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTalhao(int id, Talhao talhao)
         {
@@ -51,57 +30,55 @@ namespace AplicacaoProdutoAPI.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(talhao).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                await _talhaoService.UpdateTalhao(id, talhao);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (KeyNotFoundException)
             {
-                if (!TalhaoExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
             return NoContent();
         }
 
-        // POST: api/Talhao
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Talhao>> PostTalhao(Talhao talhao)
-        {
-            _context.Talhoes.Add(talhao);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTalhao", new { id = talhao.Id }, talhao);
-        }
 
-        // DELETE: api/Talhao/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTalhao(int id)
         {
-            var talhao = await _context.Talhoes.FindAsync(id);
+            try
+            {
+                await _talhaoService.DeleteTalhao(id);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Talhao>>> GetTalhoes()
+        {
+            var talhoes = await _talhaoService.GetTalhao();
+            return Ok(talhoes);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Talhao>> GetTalhao(int id)
+        {
+            var talhao = await _talhaoService.GetTalhao(id);
+
             if (talhao == null)
             {
                 return NotFound();
             }
 
-            _context.Talhoes.Remove(talhao);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(talhao);
         }
 
-        private bool TalhaoExists(int id)
-        {
-            return _context.Talhoes.Any(e => e.Id == id);
-        }
+
     }
 }

@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using AplicacaoProdutoAPI.Models;
-using NuGet.Protocol;
+using AplicacaoProdutoAPI.Services.Interfaces;
 
 namespace AplicacaoProdutoAPI.Controllers
 {
@@ -12,47 +8,20 @@ namespace AplicacaoProdutoAPI.Controllers
     [ApiController]
     public class SafraController : ControllerBase
     {
-        private readonly appDBContext _context;
+        private readonly ISafraService _safraService;
 
-        public SafraController(appDBContext context)
+        public SafraController(ISafraService safraService)
         {
-            _context = context;
+            _safraService = safraService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Safra>>> GetSafra()
-        {
-            return await _context.Safras.ToListAsync();
-        }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Safra>> GetSafra(int id)
-        {
-            var safra = await _context.Safras.FindAsync(id);
-
-            if (safra == null)
-            {
-                return NotFound();
-            }
-
-            return safra;
-        }
-
-        // POST: api/Safra
         [HttpPost]
         public async Task<ActionResult<Safra>> PostSafra(Safra safra)
         {
-            if (safra.DataInicio >= safra.DataFim)
-            {
-                return BadRequest("Data final da safra deve ser maior que a data inicial.".ToJson());
-            }
-            _context.Safras.Add(safra);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetSafra", new { id = safra.Id }, safra);
+            await _safraService.CreateSafra(safra);
+            return safra;
         }
 
-        // PUT: api/Safra/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSafra(int id, Safra safra)
         {
@@ -61,46 +30,51 @@ namespace AplicacaoProdutoAPI.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(safra).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                await _safraService.UpdateSafra(id, safra);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (KeyNotFoundException)
             {
-                if (!SafraExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
             return NoContent();
         }
 
-        // DELETE: api/Safra/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSafra(int id)
         {
-            var safra = await _context.Safras.FindAsync(id);
+            try
+            {
+                await _safraService.DeleteSafra(id);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Safra>>> GetSafra()
+        {
+            var safras = await _safraService.GetSafra();
+            return Ok(safras);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Safra>> GetSafra(int id)
+        {
+            var safra = await _safraService.GetSafra(id);
+
             if (safra == null)
             {
                 return NotFound();
             }
 
-            _context.Safras.Remove(safra);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool SafraExists(int id)
-        {
-            return _context.Safras.Any(e => e.Id == id);
+            return Ok(safra);
         }
     }
 }
