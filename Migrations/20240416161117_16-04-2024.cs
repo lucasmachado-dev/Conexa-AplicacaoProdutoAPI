@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AplicacaoProdutoAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class Migration01 : Migration
+    public partial class _16042024 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,6 +18,8 @@ namespace AplicacaoProdutoAPI.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Data = table.Column<DateOnly>(type: "date", nullable: false),
+                    FazendaId = table.Column<int>(type: "int", nullable: false),
+                    SafraId = table.Column<int>(type: "int", nullable: false),
                     AtividadeId = table.Column<int>(type: "int", nullable: false),
                     TalhaoId = table.Column<int>(type: "int", nullable: false),
                     Observacao = table.Column<string>(type: "nvarchar(max)", nullable: false)

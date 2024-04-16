@@ -42,7 +42,7 @@ namespace AplicacaoProdutoAPI.Controllers
                 return NotFound();
             }
 
-            return NoContent();
+            return Ok(atividade);
         }
 
         [HttpDelete("{id}")]

@@ -6,6 +6,12 @@ using AplicacaoProdutoAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
+/*TODO: Criar um model básico (Id, Descricao) para ser herdado nas classes mais básicas.
+ * Implementar validações nos services
+ * Implementar service/repository genérico para operações básicas
+ * Implementar busca avançada de aplicações, permitindo buscar por safra, fazenda, período e atividade
+*/
+
 
 var builder = WebApplication.CreateBuilder(args);
 

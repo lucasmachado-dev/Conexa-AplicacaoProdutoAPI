@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AplicacaoProdutoAPI.Migrations
 {
     [DbContext(typeof(appDBContext))]
-    [Migration("20240410161120_Migration01")]
-    partial class Migration01
+    [Migration("20240416161117_16-04-2024")]
+    partial class _16042024
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,9 +38,15 @@ namespace AplicacaoProdutoAPI.Migrations
                     b.Property<DateOnly>("Data")
                         .HasColumnType("date");
 
+                    b.Property<int>("FazendaId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Observacao")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SafraId")
+                        .HasColumnType("int");
 
                     b.Property<int>("TalhaoId")
                         .HasColumnType("int");

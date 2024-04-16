@@ -40,7 +40,7 @@ namespace AplicacaoProdutoAPI.Controllers
                 return NotFound();
             }
 
-            return NoContent();
+            return Ok(fazenda);
         }
 
         [HttpDelete("{id}")]
